@@ -167,8 +167,8 @@ def write_prices_to_txt(prices, perfume_name, type, capacity):
         mkdir(directory_name)
     # writing results to file
     with open(file_path, 'w') as f:
-        f.write(f"\n{cor_name}\t{cor_type}\t{cor_cap}"
-            f"\t{cor_date}\t{cor_time}")
+        f.write(f"{perfume_name.title()}\t\t{type}\t\t{capacity}"
+            f"\t\t{local_date} {local_time}\n\n")
         for element in prices:
             line = f"{element['price']}\t{element['shop']}\t\t{element['link']}\n"
             f.write(line)
