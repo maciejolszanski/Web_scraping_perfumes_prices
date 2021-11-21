@@ -61,11 +61,35 @@ def choose_type(perfume_url):
 
     return correct_url
         
+def choose_capacity(perfume_url):
+    '''check which capacity are available and let user choose'''
+    perfume_site = requests.get(perfume_url).text
+    perfume_site_html = BeautifulSoup(perfume_site, 'html.parser')
+    perfume_variants = perfume_site_html.find(class_='variant-tiles')
+
+    perfume_capacities = perfume_variants.find_all(class_='variant-tile-title')
+    
+    capacities_to_choose_from = []
+
+    for capacity in perfume_capacities:
+        capacity_dict = {}
+
+        link = capacity.parent['href']
+        capacity = capacity.text
+        capacity_dict['name'] = capacity
+        capacity_dict['link'] = link
+
+        capacities_to_choose_from.append(capacity_dict)
+
+    correct_url = let_user_choose(capacities_to_choose_from, 'capacity')
+
+    return(correct_url)
+
+
 def let_user_choose(items_to_choose_from, item_name):
     '''leting user choose the one item he wants'''
 
     if len(items_to_choose_from) > 1:
-    
         print(f"I have found more than one {item_name}:")
         num = 1
         for item in items_to_choose_from:
@@ -87,5 +111,7 @@ if __name__ == '__main__':
     
     perfume_name = input("What perfumes prices would you like to know? ")
 
-    perfumes_site = find_a_site(perfume_name)
-    correct_type = choose_type(perfumes_site)
+    perfumes_site_url = find_a_site(perfume_name)
+    wanted_type_url = choose_type(perfumes_site_url)
+    wanted_capacity_url = choose_capacity(wanted_type_url)
+    print(wanted_capacity_url)
