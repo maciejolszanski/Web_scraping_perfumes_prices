@@ -1,4 +1,3 @@
-from io import DEFAULT_BUFFER_SIZE
 import unittest
 from main import *
 
@@ -12,7 +11,7 @@ class PricesTestCase(unittest.TestCase):
         self.assertEqual(perfume, 'le male')
 
     #def test_find_types(self):
-    
+
     
 if __name__ =='__main__':
     unittest.main()
