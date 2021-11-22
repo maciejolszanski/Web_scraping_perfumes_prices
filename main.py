@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from os import path, mkdir
 
 
-def find_a_site(perfumes_name):
+def find_a_site(perfumes_name, preffered_name=''):
     '''searching for the wanted perfumes and asking user to choose the correct one'''
 
     # replace spaces with '+' to create correct url
@@ -32,13 +32,19 @@ def find_a_site(perfumes_name):
         link = perfume_found.strong.parent.parent['href']
 
         perfume_dict = {}
-        perfume_dict['name'] = name
-        perfume_dict['link'] = 'http://perfumehub.pl' + link
+        perfume_dict['name'] = name.strip()
+        perfume_dict['link'] = 'https://perfumehub.pl' + link.strip()
         perfumes_to_choose_from.append(perfume_dict)
 
-    # user choosesthe correct perfumes, function returns the url
-    correct_url, chosen_perfume = let_user_choose(perfumes_to_choose_from, 'perfume')
-    
+    # getting the preffered name of the perfumes
+    if preffered_name:
+        correct_url, chosen_perfume = _choose_preffered(
+            perfumes_to_choose_from, preffered_name)
+    else:
+        # user chooses the correct perfumes, function returns the url
+        correct_url, chosen_perfume = _let_user_choose(
+            perfumes_to_choose_from, 'perfume')
+        
     return correct_url, chosen_perfume
     
 def choose_type(perfume_url):
@@ -56,13 +62,13 @@ def choose_type(perfume_url):
         
         type = tag.text
         link = tag['href']
-        type_dict['name'] = type
-        type_dict['link'] = 'http://perfumehub.pl' + link
+        type_dict['name'] = type.strip()
+        type_dict['link'] = 'https://perfumehub.pl' + link.strip()
 
         types_to_choose_from.append(type_dict)
 
     # user chooses the correct one and receives the url 
-    correct_url, chosen_type = let_user_choose(types_to_choose_from, 'type')
+    correct_url, chosen_type = _let_user_choose(types_to_choose_from, 'type')
 
     return correct_url, chosen_type
         
@@ -82,11 +88,11 @@ def choose_capacity(perfume_url):
         link = capacity.parent['href']
         capacity = capacity.text
         capacity_dict['name'] = capacity
-        capacity_dict['link'] = 'http://perfumehub.pl' + link
+        capacity_dict['link'] = 'https://perfumehub.pl' + link
 
         capacities_to_choose_from.append(capacity_dict)
 
-    correct_url, chosen_capacity = let_user_choose(capacities_to_choose_from, 'capacity')
+    correct_url, chosen_capacity = _let_user_choose(capacities_to_choose_from, 'capacity')
 
     return correct_url, chosen_capacity
 
@@ -120,7 +126,7 @@ def check_prices(perfume_url):
     return found_prices
         
 
-def let_user_choose(items_to_choose_from, item_name):
+def _let_user_choose(items_to_choose_from, item_name):
     '''leting user choose the one item he wants'''
 
     if len(items_to_choose_from) > 1:
@@ -138,9 +144,21 @@ def let_user_choose(items_to_choose_from, item_name):
         user_choice = 1
 
     url_correct_perfumes = items_to_choose_from[user_choice-1]['link']
-    chosen_item = items_to_choose_from[user_choice-1]['name'].strip()
+    chosen_item = items_to_choose_from[user_choice-1]['name']
 
     return url_correct_perfumes, chosen_item
+
+def _choose_preffered(items_to_choose_from, preffered_item):
+    '''chosing item without asking user'''
+
+    for item in items_to_choose_from:
+
+        if item['name'] == preffered_item:
+            chosen_item_name = item['name']
+            chosen_item_link = item['link']
+            print(chosen_item_link)
+
+    return chosen_item_link, chosen_item_name
 
 def write_prices_to_txt(prices, perfume_name, type, capacity): 
     '''Writing found perfume prices to .txt file'''
@@ -193,10 +211,9 @@ if __name__ == '__main__':
     
     perfume_name = input("What perfumes prices would you like to know? ")
 
-    perfumes_site_url, chosen_perfume = find_a_site(perfume_name)
+    perfumes_site_url, chosen_perfume = find_a_site(perfume_name, 'le male')
     wanted_type_url, chosen_type = choose_type(perfumes_site_url)
     wanted_capacity_url, chosen_capacity = choose_capacity(wanted_type_url)
     perfume_prices = check_prices(wanted_capacity_url)
     write_prices_to_txt(
         perfume_prices, chosen_perfume, chosen_type, chosen_capacity)
-
