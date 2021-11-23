@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from os import path, mkdir
 
 
-def find_a_site(perfumes_name, preffered_name=''):
+def find_a_site(perfumes_name):
     '''searching for the wanted perfumes and choosing the correct one'''
 
     # replace spaces with '+' to create correct url
@@ -23,9 +23,9 @@ def find_a_site(perfumes_name, preffered_name=''):
     site_searching_html = BeautifulSoup(site_searching, 'html.parser')
     perfumes_found = site_searching_html.find_all(class_='list-item d-flex')
     
+    # creating a list of available perfumes
     perfumes_to_choose_from = []
     
-    # giving user a response of found perfume kinds
     for perfume_found in perfumes_found:
         #finding perfume name and link to it's site
         name = perfume_found.strong.text.strip()
@@ -34,19 +34,10 @@ def find_a_site(perfumes_name, preffered_name=''):
         perfume_dict = make_a_dict(
             ['name','link'], [name, 'https://perfumehub.pl' + link])
         perfumes_to_choose_from.append(perfume_dict)
-
-    # getting the preffered name of the perfumes
-    if preffered_name:
-        correct_url, chosen_perfume = _choose_preffered(
-            perfumes_to_choose_from, preffered_name)
-    else:
-        # user chooses the correct perfumes, function returns the url
-        correct_url, chosen_perfume = _let_user_choose(
-            perfumes_to_choose_from, 'perfume')
-        
-    return correct_url, chosen_perfume
+ 
+    return perfumes_to_choose_from
     
-def choose_type(perfume_url, preffered_type=''):
+def choose_type(perfume_url):
     '''check what are the possible types: edt, edp eg.'''
 
     perfume_site = requests.get(perfume_url).text
@@ -64,15 +55,8 @@ def choose_type(perfume_url, preffered_type=''):
         type_dict = make_a_dict(
             ['name','link'], [pefume_type, 'https://perfumehub.pl' + link])
         types_to_choose_from.append(type_dict)
-    # getting the preffered name of the perfumes
-    if preffered_type:
-        correct_url, chosen_type = _choose_preffered(
-            types_to_choose_from, preffered_type)
-    # user chooses the correct one and receives the url 
-    else:
-        correct_url, chosen_type = _let_user_choose(types_to_choose_from, 'type')
 
-    return correct_url, chosen_type
+    return types_to_choose_from
         
 def choose_capacity(perfume_url, preffered_cap=''):
     '''check which capacity are available and let user choose'''
@@ -94,14 +78,7 @@ def choose_capacity(perfume_url, preffered_cap=''):
 
         capacities_to_choose_from.append(capacity_dict)
 
-    if preffered_cap:
-        correct_url, chosen_capacity = _choose_preffered(
-            capacities_to_choose_from, preffered_cap)
-    else:
-        correct_url, chosen_capacity = _let_user_choose(
-            capacities_to_choose_from,'capacity')
-
-    return correct_url, chosen_capacity
+    return capacities_to_choose_from
 
 def check_prices(perfume_url):
     '''checking prices of this perfume and where to buy it'''
@@ -140,7 +117,20 @@ def make_a_dict(dict_keys, dict_values):
         num += 1
     
     return dict
-    
+
+def create_an_url(list_of_items, items_name, preffered=''):
+    '''creating an url for perfumehub based on a list'''
+
+    # getting the preffered name of the perfumes
+    if preffered:
+        correct_url, chosen_item = _choose_preffered(
+            list_of_items, preffered)
+    # user chooses the correct one and receives the url 
+    else:
+        correct_url, chosen_item = _let_user_choose(list_of_items, items_name)
+
+    return correct_url, chosen_item
+
 def _let_user_choose(items_to_choose_from, item_name):
     '''leting user choose the one item he wants'''
 
@@ -234,10 +224,20 @@ if __name__ == '__main__':
     
     perfume_name = input("What perfumes prices would you like to know? ")
 
-    perfumes_site_url, chosen_perfume = find_a_site(perfume_name, 'le male')
-    wanted_type_url, chosen_type = choose_type(perfumes_site_url, 'woda perfumowana')
-    wanted_capacity_url, chosen_capacity = choose_capacity(wanted_type_url, '75  ml')
+    available_perfumes = find_a_site(perfume_name)
+    
+    perfumes_site_url, chosen_perfume = create_an_url(available_perfumes,
+        'perfume', 'le male')
+
+    available_types = choose_type(perfumes_site_url)
+    wanted_type_url, chosen_type = create_an_url(available_types, 'type', 'woda perfumowana')
+
+    available_capacities = choose_capacity(wanted_type_url)
+    wanted_capacity_url, chosen_capacity = create_an_url(available_capacities,
+        'capacity', '75  ml')
 
     perfume_prices = check_prices(wanted_capacity_url)
     write_prices_to_txt(
         perfume_prices, chosen_perfume, chosen_type, chosen_capacity)
+
+    print(available_capacities)
