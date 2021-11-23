@@ -139,7 +139,7 @@ def _let_user_choose(items_to_choose_from, item_name):
     # if there is only one item found it is immediately regarded as correct
     else:
         print(f"I have found only one {item_name}: "
-            "{items_to_choose_from[0]['name']}")
+            f"{items_to_choose_from[0]['name']}")
         user_choice = 1
 
     url_correct_perfumes = items_to_choose_from[user_choice-1]['link']
@@ -222,22 +222,45 @@ def _format_string_to_txt(string):
 
 if __name__ == '__main__':
     
+    # aski user about the perfume name
     perfume_name = input("What perfumes prices would you like to know? ")
 
+    preffered_values = ['','','']
+    types_of_values = ['Perfume:','Type:', 'Capacity:']
+
+    # print instrucions
+    print("Type preffered values to automate the process\n"
+        "Submit each value with ENTER\n"
+        "If you do not know the values and want to go through the process"
+        "press 'q' and sumbit with ENTER\n")
+
+    # if user knows exact values of the needed items he/she can type them now 
+    # it will make the process a little faster 
+    # if he/she does not know he can skip it by pressing 'q'
+    num = 0
+    for value in types_of_values:
+        value = input(f"{value} ")
+        if value == 'q':
+            break
+        else:
+            preffered_values[num] = value
+            num += 1
+
+    # finding perfumes that match a perfume name given by user 
+    # and finding its url
     available_perfumes = find_a_site(perfume_name)
-    
     perfumes_site_url, chosen_perfume = create_an_url(available_perfumes,
-        'perfume', 'le male')
+        'perfume', preffered_values[0])
+
 
     available_types = choose_type(perfumes_site_url)
-    wanted_type_url, chosen_type = create_an_url(available_types, 'type', 'woda perfumowana')
+    wanted_type_url, chosen_type = create_an_url(available_types, 'type', 
+        preffered_values[1])
 
     available_capacities = choose_capacity(wanted_type_url)
     wanted_capacity_url, chosen_capacity = create_an_url(available_capacities,
-        'capacity', '75  ml')
+        'capacity', preffered_values[2])
 
     perfume_prices = check_prices(wanted_capacity_url)
     write_prices_to_txt(
         perfume_prices, chosen_perfume, chosen_type, chosen_capacity)
-
-    print(available_capacities)
