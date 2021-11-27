@@ -19,8 +19,8 @@ def find_a_site(perfumes_name):
     url_of_searching = f'https://perfumehub.pl/search?q={perfumes_name_pluses}'
 
     # finding a site that shows searching results
-    site_searching = requests.get(url_of_searching).text
-    site_searching_html = BeautifulSoup(site_searching, 'html.parser')
+    site_searching_html = get_site_html(url_of_searching)
+
     perfumes_found = site_searching_html.find_all(class_='list-item d-flex')
     
     # creating a list of available perfumes
@@ -34,14 +34,15 @@ def find_a_site(perfumes_name):
         perfume_dict = make_a_dict(
             ['name','link'], [name, 'https://perfumehub.pl' + link])
         perfumes_to_choose_from.append(perfume_dict)
- 
+
     return perfumes_to_choose_from
     
 def choose_type(perfume_url):
     '''check what are the possible types: edt, edp eg.'''
 
-    perfume_site = requests.get(perfume_url).text
-    perfume_site_html = BeautifulSoup(perfume_site, 'html.parser')
+    # finding a site 
+    perfume_site_html = get_site_html(perfume_url)    
+     
     perfume_type = perfume_site_html.find(class_='mt-4')
     perfume_tag = perfume_type.find_all(name='a')
 
@@ -60,8 +61,8 @@ def choose_type(perfume_url):
         
 def choose_capacity(perfume_url, preffered_cap=''):
     '''check which capacity are available and let user choose'''
-    perfume_site = requests.get(perfume_url).text
-    perfume_site_html = BeautifulSoup(perfume_site, 'html.parser')
+    
+    perfume_site_html = get_site_html(perfume_url)   
     perfume_variants = perfume_site_html.find(class_='variant-tiles')
 
     perfume_capacities = perfume_variants.find_all(class_='variant-tile-title')
@@ -82,8 +83,8 @@ def choose_capacity(perfume_url, preffered_cap=''):
 
 def check_prices(perfume_url):
     '''checking prices of this perfume and where to buy it'''
-    perfume_site = requests.get(perfume_url).text
-    perfume_site_html = BeautifulSoup(perfume_site, 'html.parser')
+    
+    perfume_site_html = get_site_html(perfume_url)   
 
     perfume_rows = perfume_site_html.find_all(
         class_='row offer border-top mx-0 align-items-center')
@@ -130,6 +131,19 @@ def create_an_url(list_of_items, items_name, preffered=''):
         correct_url, chosen_item = _let_user_choose(list_of_items, items_name)
 
     return correct_url, chosen_item
+
+def get_site_html(url):
+    '''gets the site in html formatting'''
+
+    try:
+        site = requests.get(url).text
+        site_html = BeautifulSoup(site, 'html.parser')
+        return site_html
+
+    except:
+        print('Sorry, I cannot find such a site.')
+        return None
+    
 
 def _let_user_choose(items_to_choose_from, item_name):
     '''leting user choose the one item he wants'''
@@ -222,7 +236,7 @@ def _format_string_to_txt(string):
 
 if __name__ == '__main__':
     
-    # aski user about the perfume name
+    # asking user about the perfume name
     perfume_name = input("What perfumes prices would you like to know? ")
 
     preffered_values = ['','','']
@@ -235,7 +249,7 @@ if __name__ == '__main__':
         "press 'q' and sumbit with ENTER\n")
 
     # if user knows exact values of the needed items he/she can type them now 
-    # it will make the process a little faster 
+    # it will make the process last a little shorter 
     # if he/she does not know he can skip it by pressing 'q'
     num = 0
     for value in types_of_values:
